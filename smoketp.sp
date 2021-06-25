@@ -33,7 +33,7 @@ public OnPluginStart()
 	HookEvent("smokegrenade_expired", rmsmoketp);
 	HookEvent("round_start", clearsmoketp);
 	HookEvent("grenade_thrown", smokegiver);
-	//HookEvent("tr_player_flashbanged", smoketp);
+	
 	RegConsoleCmd("tpme", smoketp); // bind `tpme` to any button, to teleport in smoke
 	
 	//HookEvent("player_ping", pingtp);
@@ -42,19 +42,23 @@ public OnPluginStart()
 
 public Action smoketp(int client, int args)
 {
+	// TODO: BALANCE ME: Add cooldown before next teleport for each player
+
 	new Float:f_Pos[3];
 	GetClientAbsOrigin(client, f_Pos);
 	
 	if(debug_mode){
-		PrintToChatAll("Got flash at %f %f %f", f_Pos[0], f_Pos[1], f_Pos[2]);
+		PrintToChatAll("Trying to teleport at %f %f %f", f_Pos[0], f_Pos[1], f_Pos[2]);
 	}
 	
 	// Find in which smoke player is
 	for(int i = 0; i<smoke_i; i++){
+		// TODO: Define smoke box as structure, then in function check if player is in box
 		if(f_Pos[0] > smoke_f_Pos[i][0]-50 && f_Pos[0] < smoke_f_Pos[i][0]+50){ //			X	// This basically checks if
 			if(f_Pos[1] > smoke_f_Pos[i][1]-50 && f_Pos[1] < smoke_f_Pos[i][1]+50){ //		Y	// player is in a little box in smoke
 				if(f_Pos[2] > smoke_f_Pos[i][2]-30 && f_Pos[2] < smoke_f_Pos[i][2]+30){ //	Z
 					
+					// TODO: Build function set for stack operations
 					// Find bottom of smoke_id stack
 					int nmin = 0;
 					for(int x = 0; x<smoke_i; x++){
@@ -77,6 +81,7 @@ public Action smoketp(int client, int args)
 						}
 					}else{
 						if(debug_mode){
+							// TODO: Change output to client console, add plugin tag before message
 							PrintToChatAll("Nowhere to teleport");
 						}
 					}
@@ -87,7 +92,7 @@ public Action smoketp(int client, int args)
 	}
 }
 
-// BALANCE ME!!!
+// BALANCE ME: Define how much smoke grenades player get, right now it's infinity
 public smokegiver(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new userid = GetEventInt(event, "userid");
@@ -103,19 +108,21 @@ public smokegiver(Handle:event, const String:name[], bool:dontBroadcast)
 
 public clearsmoketp(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	smoke_i = 0;
-	smokes_on_map = 0;
-	for(int i = 0; i<100; i++){
+	for(int i = 0; i<smoke_i; i++){
 		smoke_id[i] = 0;
 		smoke_f_Pos[i][0] = 0.0;
 		smoke_f_Pos[i][1] = 0.0;
 		smoke_f_Pos[i][2] = 0.0;
 	}
+	smoke_i = 0;
+	smokes_on_map = 0;
+
 	if(debug_mode){
 		PrintToChatAll("Round clear smoke");
 	}
 }
 
+// TODO: Fix syntax of whole code (function names, function definition, overall look)
 public addsmoketp(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	// Some data
@@ -171,6 +178,7 @@ public rmsmoketp(Handle:event, const String:name[], bool:dontBroadcast)
 	smoke_f_Pos[this_i][2] = 0.0;
 }
 
+// TODO Make pingtp as an option, defined by command perhaps (same with whole smoketp)?
 /*
 public pingtp(Handle:event, const String:name[], bool:dontBroadcast)
 {
