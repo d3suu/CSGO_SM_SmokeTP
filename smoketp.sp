@@ -166,12 +166,26 @@ public void smoketpf(int client, int smoke_il, int player_idl)
 		
 		TeleportEntity(client, local_smoke_f_Pos, NULL_VECTOR, NULL_VECTOR);
 		
+		// Check if player is stuck
+		bool isStuck = false;
+		if(isPlayerStuck(client)){
+			// Teleport back, no cooldown
+			TeleportEntity(client, f_Pos, NULL_VECTOR, NULL_VECTOR);
+			isStuck = true;
+			
+			if(debug_mode){
+				PrintToChatAll("Teleport failed, player stuck");
+			}
+		}
+		
 		// Add cooldown to player
-		player_teleportable[player_idl] = false;
-		CreateTimer(smoke_tp_cooldown, cooldownOff, player_idl);
-		if(debug_mode){
-			PrintToChatAll("Player %N cooldown start", player_id[player_idl]);
-			PrintToChatAll("Teleported %N", player_id[player_idl]);
+		if(!isStuck){
+			player_teleportable[player_idl] = false;
+			CreateTimer(smoke_tp_cooldown, cooldownOff, player_idl);
+			if(debug_mode){
+				PrintToChatAll("Player %N cooldown start", player_id[player_idl]);
+				PrintToChatAll("Teleported %N", player_id[player_idl]);
+			}
 		}
 	}else{
 		if(debug_mode){
@@ -219,12 +233,26 @@ public Action smoketp(int client, int args)
 				
 				TeleportEntity(client, local_smoke_f_Pos, NULL_VECTOR, NULL_VECTOR);
 				
+				// Check if player is stuck
+				bool isStuck = false;
+				if(isPlayerStuck(client)){
+					// Teleport back, no cooldown
+					TeleportEntity(client, f_Pos, NULL_VECTOR, NULL_VECTOR);
+					isStuck = true;
+			
+					if(debug_mode){
+						PrintToChatAll("Teleport failed, player stuck");
+					}
+				}
+				
 				// Add cooldown to player
-				player_teleportable[i] = false;
-				CreateTimer(smoke_tp_cooldown, cooldownOff, i);
-				if(debug_mode){
-					PrintToChatAll("Player %N cooldown start", player_id[i]);
-					PrintToChatAll("Teleported %N", player_id[i]);
+				if(!isStuck){
+					player_teleportable[i] = false;
+					CreateTimer(smoke_tp_cooldown, cooldownOff, i);
+					if(debug_mode){
+						PrintToChatAll("Player %N cooldown start", player_id[i]);
+						PrintToChatAll("Teleported %N", player_id[i]);
+					}
 				}
 			}else{
 				if(debug_mode){
@@ -331,6 +359,25 @@ public bool isPlayerInSmokeI(float f_Pos[3], int lsmoke_i)
 		return true;
 	}}}
 	return false;
+}
+
+public bool isPlayerStuck(client)
+{
+	float fMin[3];
+	float fMax[3];
+	float fPos[3];
+	
+	GetClientMins(client, fMin);
+	GetClientMaxs(client, fMax);
+	GetClientAbsOrigin(client, fPos);
+	
+	TR_TraceHullFilter(fPos, fPos, fMin, fMax, MASK_SOLID, TraceEntityFilterSolid);
+	return TR_DidHit();
+}
+
+public bool TraceEntityFilterSolid(entity, contentsMask) 
+{
+	return entity > 1;
 }
 
 // --------------------------------------------------------------------- PER PLAYER SMOKE CALCULATION FUNCTIONS
